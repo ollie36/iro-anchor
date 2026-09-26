@@ -1,1 +1,35 @@
-{"name": "いろアンカー JIS269", "short_name": "いろアンカー", "start_url": "./index.html", "scope": "./", "display": "standalone", "background_color": "#f4f1eb", "theme_color": "#f4f1eb", "description": "JIS慣用色名269色をキャラクターで覚える個人用色彩アプリ"}
+{
+  "id": "./",
+  "name": "いろアンカー",
+  "short_name": "いろアンカー",
+  "description": "JIS慣用色名269色をキャラクターで覚える個人用色彩アプリ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#f4f1eb",
+  "theme_color": "#f4f1eb",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

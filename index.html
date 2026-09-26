@@ -1,6 +1,9 @@
 <!doctype html><html lang="ja"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#f4f1eb"><link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f4f1eb">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <title>いろアンカー FREE</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f1eb;color:#222;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
@@ -56,7 +59,7 @@ nav button{background:transparent;color:#333;min-width:120px}.pair{display:flex;
 <label class="small">English / Romanized</label><input id="editEnglish" type="text">
 <div class="row"><label class="upload alt">画像を変更<input id="editFile" type="file" accept="image/*"></label><button id="saveEdit">変更を保存</button><button id="deleteEdit" class="alt">登録解除</button><button id="cancelEdit" class="alt">閉じる</button></div>
 </div><div id="pairs"></div></section>
-<section id="settings" class="hidden"><div class="card"><b>仕様</b><p class="small"><strong>Build: FINAL v3.1（UI調整）</strong></p><p class="small">維持費0円・APIキー不要。検索はAniList公開API。画像・登録内容はブラウザ内に保存します。</p><button id="reset" class="alt">全登録を消す</button></div></section>
+<section id="settings" class="hidden"><div class="card"><b>仕様</b><p class="small"><strong>Build: FINAL v3.2（PWA対応）</strong></p><p class="small">維持費0円・APIキー不要。検索はAniList公開API。画像・登録内容はブラウザ内に保存します。</p><button id="reset" class="alt">全登録を消す</button></div></section>
 </main>
 <nav><button data-tab="today">今日</button><button data-tab="book">図鑑</button><button data-tab="settings">設定</button></nav>
 <script>
