@@ -1,0 +1,202 @@
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f1eb"><link rel="manifest" href="manifest.webmanifest">
+<title>いろアンカー FREE</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f1eb;color:#222;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+main{max-width:780px;margin:auto;padding:18px 15px 90px}h1{font-size:18px;font-weight:700}.card{background:#fff;border-radius:22px;padding:18px;margin:12px 0;box-shadow:0 5px 24px #0000000b}
+.hero{text-align:center;padding:14px}.kanji{font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;font-size:clamp(40px,11vw,68px);font-weight:800;line-height:1.08;letter-spacing:.04em;word-break:keep-all}
+.furigana{font-size:14px;letter-spacing:.24em;margin:5px 0 12px;color:#666}.swatch{height:min(44vh,330px);min-height:240px;border-radius:18px;border:1px solid #0001}
+.hex{font-size:12px;color:#777;margin-top:8px}.small{font-size:12px;color:#6b6b6b;line-height:1.65}
+button,a.btn,.upload{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:13px;padding:0 14px;height:42px;line-height:1;background:#222;color:#fff;font-weight:700;font-size:14px;font-family:inherit;text-decoration:none;cursor:pointer;white-space:nowrap}
+.alt{background:#ebe8e1!important;color:#222!important}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+input[type=text]{width:100%;padding:12px;border:1px solid #ddd;border-radius:12px;font-size:16px;margin:7px 0}
+input[type=file]{display:none}
+@media(max-width:520px){.row>button,.row>a.btn,.row>label.upload{flex:1 1 auto;min-width:0}}.results{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.person{background:#f7f6f2;border-radius:15px;overflow:hidden;cursor:pointer;border:2px solid transparent}
+.person img{width:100%;height:210px;object-fit:cover;background:#ddd}.person div{padding:9px}.person.used{opacity:.35}.hidden{display:none!important}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fffffff0;backdrop-filter:blur(10px);border-top:1px solid #ddd;display:flex;justify-content:center}
+nav button{background:transparent;color:#333;min-width:120px}.pair{display:flex;gap:13px;align-items:center}.pair img{width:110px;height:145px;object-fit:cover;border-radius:12px}
+.dot{width:38px;height:38px;border-radius:11px;display:inline-block;flex:none}.anchorImg{width:100%;max-height:440px;object-fit:contain;border-radius:17px;background:#eee;margin:12px 0}
+.choice{border:2px solid #ddd;border-radius:17px;padding:10px;margin-top:12px}.choice img{width:100%;max-height:360px;object-fit:contain;border-radius:12px;background:#eee}
+</style></head><body><main>
+<h1>いろアンカー <span class="small">JIS269 Hair Search</span></h1>
+<section id="today">
+ <div class="card hero">
+   <div id="colorName" class="kanji"></div><div id="colorReading" class="furigana"></div>
+   <div id="colorSwatch" class="swatch"></div><div id="colorHex" class="hex"></div>
+ </div>
+ <div id="assigned"></div>
+ <div id="searchbox" class="card">
+   <b>記憶アンカーを決める</b>
+   <p class="small">キャラを検索して選ぶか、好きな画像を直接登録できます。</p>
+   <input id="q" type="text" placeholder="キャラクター名を検索">
+   <div class="row"><button id="go">キャラを検索</button><label class="upload alt">画像から直接登録<input id="directFile" type="file" accept="image/*"></label></div>
+   <div class="row"><a id="google" class="btn alt" target="_blank">この色で画像検索</a><span id="hairLabel" class="small"></span></div>
+   <div id="status" class="small"></div><div id="results" class="results"></div>
+ </div>
+ <div id="pick" class="card hidden">
+   <b>このキャラで登録</b>
+   <div class="choice"><img id="pickImg"><div id="pickName" style="font-weight:800;margin-top:8px"></div></div>
+   <p class="small">この画像でよければそのまま保存。髪色が違う・もっと覚えやすい画像がある場合は差し替えられます。</p>
+   <div class="row"><button id="savePick">この画像で保存</button><label class="upload alt">画像を差し替える<input id="replaceFile" type="file" accept="image/*"></label><button id="cancelPick" class="alt">戻る</button></div>
+ </div>
+ <div id="direct" class="card hidden">
+   <b>画像から直接登録</b><img id="directImg" class="anchorImg">
+   <input id="directNative" type="text" placeholder="キャラクター名（日本語）"><input id="directName" type="text" placeholder="Character name (English / Romanized)">
+   <div class="row"><button id="saveDirect">保存</button><button id="cancelDirect" class="alt">やめる</button></div>
+ </div>
+ <div class="card small"><b>色の出典</b><br>色名：JIS Z 8102:2001「物体色の色名」の慣用色名269色（和色名147色＋外来色名122色）。画面のHEXはWeb表示用近似値で、標準色票そのものではありません。</div>
+</section>
+<section id="book" class="hidden">
+<div class="card"><b>色図鑑</b><div class="small">1色＝1キャラ。登録カードをタップすると名前・画像を編集できます。</div></div>
+<div id="bookEditor" class="card hidden">
+<b id="editColorTitle">登録を編集</b>
+<img id="editImg" class="anchorImg">
+<label class="small">日本語名</label><input id="editNative" type="text">
+<label class="small">English / Romanized</label><input id="editEnglish" type="text">
+<div class="row"><label class="upload alt">画像を変更<input id="editFile" type="file" accept="image/*"></label><button id="saveEdit">変更を保存</button><button id="deleteEdit" class="alt">登録解除</button><button id="cancelEdit" class="alt">閉じる</button></div>
+</div><div id="pairs"></div></section>
+<section id="settings" class="hidden"><div class="card"><b>仕様</b><p class="small"><strong>Build: FINAL v3（日英キャラ名表示）</strong></p><p class="small">維持費0円・APIキー不要。検索はAniList公開API。画像・登録内容はブラウザ内に保存します。</p><button id="reset" class="alt">全登録を消す</button></div></section>
+</main>
+<nav><button data-tab="today">今日</button><button data-tab="book">図鑑</button><button data-tab="settings">設定</button></nav>
+<script>
+const COLORS=[{"name":"鴇色","reading":"ときいろ","hex":"#FA9CB8","simple":"キャラクター"},{"name":"躑躅色","reading":"つつじいろ","hex":"#CF4078","simple":"キャラクター"},{"name":"桜色","reading":"さくらいろ","hex":"#FBDADE","simple":"キャラクター"},{"name":"薔薇色","reading":"ばらいろ","hex":"#D53E62","simple":"キャラクター"},{"name":"唐紅","reading":"からくれない","hex":"#E64B6B","simple":"キャラクター"},{"name":"珊瑚色","reading":"さんごいろ","hex":"#FF7F8F","simple":"キャラクター"},{"name":"紅梅色","reading":"こうばいいろ","hex":"#DF828A","simple":"キャラクター"},{"name":"桃色","reading":"ももいろ","hex":"#E38089","simple":"キャラクター"},{"name":"紅色","reading":"べにいろ","hex":"#BE003F","simple":"キャラクター"},{"name":"紅赤","reading":"べにあか","hex":"#B81A3E","simple":"キャラクター"},{"name":"臙脂","reading":"えんじ","hex":"#AD3140","simple":"キャラクター"},{"name":"蘇芳","reading":"すおう","hex":"#94474B","simple":"キャラクター"},{"name":"茜色","reading":"あかねいろ","hex":"#9E2236","simple":"キャラクター"},{"name":"赤","reading":"あか","hex":"#BE0032","simple":"キャラクター"},{"name":"朱色","reading":"しゅいろ","hex":"#EF454A","simple":"キャラクター"},{"name":"紅樺色","reading":"べにかばいろ","hex":"#9E413F","simple":"キャラクター"},{"name":"紅緋","reading":"べにひ","hex":"#EF4644","simple":"キャラクター"},{"name":"鉛丹色","reading":"えんたんいろ","hex":"#D1483E","simple":"キャラクター"},{"name":"紅海老茶","reading":"べにえびちゃ","hex":"#6D3A33","simple":"キャラクター"},{"name":"鳶色","reading":"とびいろ","hex":"#7A453D","simple":"キャラクター"},{"name":"小豆色","reading":"あずきいろ","hex":"#905D54","simple":"キャラクター"},{"name":"弁柄色","reading":"べんがらいろ","hex":"#863E33","simple":"キャラクター"},{"name":"海老茶","reading":"えびちゃ","hex":"#693C34","simple":"キャラクター"},{"name":"金赤","reading":"きんあか","hex":"#EA4E31","simple":"キャラクター"},{"name":"赤茶","reading":"あかちゃ","hex":"#AD4E39","simple":"キャラクター"},{"name":"赤錆色","reading":"あかさびいろ","hex":"#8D3927","simple":"キャラクター"},{"name":"黄丹","reading":"おうに","hex":"#EB6940","simple":"キャラクター"},{"name":"赤橙","reading":"あかだいだい","hex":"#E65226","simple":"キャラクター"},{"name":"柿色","reading":"かきいろ","hex":"#DB5C35","simple":"キャラクター"},{"name":"肉桂色","reading":"にっけいいろ","hex":"#B5725C","simple":"キャラクター"},{"name":"樺色","reading":"かばいろ","hex":"#B64826","simple":"キャラクター"},{"name":"煉瓦色","reading":"れんがいろ","hex":"#914C35","simple":"キャラクター"},{"name":"錆色","reading":"さびいろ","hex":"#624035","simple":"キャラクター"},{"name":"檜皮色","reading":"ひわだいろ","hex":"#865C4B","simple":"キャラクター"},{"name":"栗色","reading":"くりいろ","hex":"#704B38","simple":"キャラクター"},{"name":"黄赤","reading":"きあか","hex":"#D86011","simple":"キャラクター"},{"name":"代赭","reading":"たいしゃ","hex":"#B26235","simple":"キャラクター"},{"name":"駱駝色","reading":"らくだいろ","hex":"#B0764F","simple":"キャラクター"},{"name":"黄茶","reading":"きちゃ","hex":"#B1632A","simple":"キャラクター"},{"name":"肌色","reading":"はだいろ","hex":"#F1BB93","simple":"キャラクター"},{"name":"橙色","reading":"だいだいいろ","hex":"#EF810F","simple":"キャラクター"},{"name":"灰茶","reading":"はいちゃ","hex":"#816551","simple":"キャラクター"},{"name":"茶色","reading":"ちゃいろ","hex":"#6D4C33","simple":"キャラクター"},{"name":"焦茶","reading":"こげちゃ","hex":"#564539","simple":"キャラクター"},{"name":"柑子色","reading":"こうじいろ","hex":"#FAA55C","simple":"キャラクター"},{"name":"杏色","reading":"あんずいろ","hex":"#D89F6D","simple":"キャラクター"},{"name":"蜜柑色","reading":"みかんいろ","hex":"#EB8400","simple":"キャラクター"},{"name":"褐色","reading":"かっしょく","hex":"#6B3E08","simple":"キャラクター"},{"name":"土色","reading":"つちいろ","hex":"#9F6C31","simple":"キャラクター"},{"name":"小麦色","reading":"こむぎいろ","hex":"#D4A168","simple":"キャラクター"},{"name":"琥珀色","reading":"こはくいろ","hex":"#AA7A40","simple":"キャラクター"},{"name":"金茶","reading":"きんちゃ","hex":"#B47700","simple":"キャラクター"},{"name":"卵色","reading":"たまごいろ","hex":"#F4BD6B","simple":"キャラクター"},{"name":"山吹色","reading":"やまぶきいろ","hex":"#F8A900","simple":"キャラクター"},{"name":"黄土色","reading":"おうどいろ","hex":"#B8883B","simple":"キャラクター"},{"name":"朽葉色","reading":"くちばいろ","hex":"#847461","simple":"キャラクター"},{"name":"向日葵色","reading":"ひまわりいろ","hex":"#FFBB00","simple":"キャラクター"},{"name":"鬱金色","reading":"うこんいろ","hex":"#EDAE00","simple":"キャラクター"},{"name":"砂色","reading":"すないろ","hex":"#C5B69E","simple":"キャラクター"},{"name":"芥子色","reading":"からしいろ","hex":"#C8A65D","simple":"キャラクター"},{"name":"黄","reading":"き","hex":"#FFFF00","simple":"キャラクター"},{"name":"蒲公英色","reading":"たんぽぽいろ","hex":"#E3C700","simple":"キャラクター"},{"name":"鶯茶","reading":"うぐいすちゃ","hex":"#6A5F37","simple":"キャラクター"},{"name":"中黄","reading":"ちゅうき","hex":"#EDD60E","simple":"キャラクター"},{"name":"刈安色","reading":"かりやすいろ","hex":"#EAD56B","simple":"キャラクター"},{"name":"黄檗色","reading":"きはだいろ","hex":"#D6C949","simple":"キャラクター"},{"name":"海松色","reading":"みるいろ","hex":"#716B4A","simple":"キャラクター"},{"name":"鶸色","reading":"ひわいろ","hex":"#C2BD3D","simple":"キャラクター"},{"name":"鶯色","reading":"うぐいすいろ","hex":"#706C3E","simple":"キャラクター"},{"name":"抹茶色","reading":"まっちゃいろ","hex":"#C0BA7F","simple":"キャラクター"},{"name":"黄緑","reading":"きみどり","hex":"#BBC000","simple":"キャラクター"},{"name":"苔色","reading":"こけいろ","hex":"#7C7A37","simple":"キャラクター"},{"name":"若草色","reading":"わかくさいろ","hex":"#AAB300","simple":"キャラクター"},{"name":"萌黄","reading":"もえぎ","hex":"#97A61E","simple":"キャラクター"},{"name":"草色","reading":"くさいろ","hex":"#737C3E","simple":"キャラクター"},{"name":"若葉色","reading":"わかばいろ","hex":"#A9C087","simple":"キャラクター"},{"name":"松葉色","reading":"まつばいろ","hex":"#687E52","simple":"キャラクター"},{"name":"白緑","reading":"びゃくろく","hex":"#BADBC7","simple":"キャラクター"},{"name":"緑","reading":"みどり","hex":"#00B66E","simple":"キャラクター"},{"name":"常磐色","reading":"ときわいろ","hex":"#007B50","simple":"キャラクター"},{"name":"緑青色","reading":"ろくしょういろ","hex":"#4D8169","simple":"キャラクター"},{"name":"千歳緑","reading":"ちとせみどり","hex":"#3C6754","simple":"キャラクター"},{"name":"深緑","reading":"ふかみどり","hex":"#005638","simple":"キャラクター"},{"name":"萌葱色","reading":"もえぎいろ","hex":"#00533E","simple":"キャラクター"},{"name":"若竹色","reading":"わかたけいろ","hex":"#00A37E","simple":"キャラクター"},{"name":"青磁色","reading":"せいじいろ","hex":"#6DA895","simple":"キャラクター"},{"name":"青竹色","reading":"あおたけいろ","hex":"#6AA89D","simple":"キャラクター"},{"name":"鉄色","reading":"てついろ","hex":"#24433E","simple":"キャラクター"},{"name":"青緑","reading":"あおみどり","hex":"#008E94","simple":"キャラクター"},{"name":"錆浅葱","reading":"さびあさぎ","hex":"#608A8E","simple":"キャラクター"},{"name":"水浅葱","reading":"みずあさぎ","hex":"#6D969C","simple":"キャラクター"},{"name":"新橋色","reading":"しんばしいろ","hex":"#53A8B7","simple":"キャラクター"},{"name":"浅葱","reading":"あさぎ","hex":"#00859B","simple":"キャラクター"},{"name":"白群","reading":"びゃくぐん","hex":"#73B3C1","simple":"キャラクター"},{"name":"納戸色","reading":"なんどいろ","hex":"#00687C","simple":"キャラクター"},{"name":"甕覗き","reading":"かめのぞき","hex":"#7EB1C1","simple":"キャラクター"},{"name":"水色","reading":"みずいろ","hex":"#9DCCE0","simple":"キャラクター"},{"name":"藍鼠","reading":"あいねず","hex":"#576D79","simple":"キャラクター"},{"name":"空色","reading":"そらいろ","hex":"#89BDDE","simple":"キャラクター"},{"name":"青","reading":"あお","hex":"#006AB6","simple":"キャラクター"},{"name":"藍色","reading":"あいいろ","hex":"#2B4B65","simple":"キャラクター"},{"name":"濃藍","reading":"こいあい","hex":"#223546","simple":"キャラクター"},{"name":"勿忘草色","reading":"わすれなぐさいろ","hex":"#89ACD7","simple":"キャラクター"},{"name":"露草色","reading":"つゆくさいろ","hex":"#007BC3","simple":"キャラクター"},{"name":"縹色","reading":"はなだいろ","hex":"#2B618F","simple":"キャラクター"},{"name":"紺青","reading":"こんじょう","hex":"#3A4861","simple":"キャラクター"},{"name":"瑠璃色","reading":"るりいろ","hex":"#00519A","simple":"キャラクター"},{"name":"瑠璃紺","reading":"るりこん","hex":"#27477A","simple":"キャラクター"},{"name":"紺色","reading":"こんいろ","hex":"#343D55","simple":"キャラクター"},{"name":"杜若色","reading":"かきつばたいろ","hex":"#435AA0","simple":"キャラクター"},{"name":"勝色","reading":"かちいろ","hex":"#3A3C4F","simple":"キャラクター"},{"name":"群青色","reading":"ぐんじょういろ","hex":"#384D98","simple":"キャラクター"},{"name":"鉄紺","reading":"てつこん","hex":"#292934","simple":"キャラクター"},{"name":"藤納戸","reading":"ふじなんど","hex":"#69639A","simple":"キャラクター"},{"name":"桔梗色","reading":"ききょういろ","hex":"#4347A2","simple":"キャラクター"},{"name":"紺藍","reading":"こんあい","hex":"#353573","simple":"キャラクター"},{"name":"藤色","reading":"ふじいろ","hex":"#A294C8","simple":"キャラクター"},{"name":"藤紫","reading":"ふじむらさき","hex":"#9883C9","simple":"キャラクター"},{"name":"青紫","reading":"あおむらさき","hex":"#7445AA","simple":"キャラクター"},{"name":"菫色","reading":"すみれいろ","hex":"#714C99","simple":"キャラクター"},{"name":"鳩羽色","reading":"はとばいろ","hex":"#665971","simple":"キャラクター"},{"name":"菖蒲色","reading":"しょうぶいろ","hex":"#744B98","simple":"キャラクター"},{"name":"江戸紫","reading":"えどむらさき","hex":"#614876","simple":"キャラクター"},{"name":"紫","reading":"むらさき","hex":"#A757A8","simple":"キャラクター"},{"name":"古代紫","reading":"こだいむらさき","hex":"#765276","simple":"キャラクター"},{"name":"茄子紺","reading":"なすこん","hex":"#473946","simple":"キャラクター"},{"name":"紫紺","reading":"しこん","hex":"#422C41","simple":"キャラクター"},{"name":"菖蒲色","reading":"あやめいろ","hex":"#C573B2","simple":"キャラクター"},{"name":"牡丹色","reading":"ぼたんいろ","hex":"#C94093","simple":"キャラクター"},{"name":"赤紫","reading":"あかむらさき","hex":"#DA508F","simple":"キャラクター"},{"name":"白","reading":"しろ","hex":"#F0F0F0","simple":"キャラクター"},{"name":"胡粉色","reading":"ごふんいろ","hex":"#EBE7E1","simple":"キャラクター"},{"name":"生成り色","reading":"きなりいろ","hex":"#EAE0D5","simple":"キャラクター"},{"name":"象牙色","reading":"ぞうげいろ","hex":"#DED2BF","simple":"キャラクター"},{"name":"銀鼠","reading":"ぎんねず","hex":"#9C9C9C","simple":"キャラクター"},{"name":"茶鼠","reading":"ちゃねず","hex":"#998D86","simple":"キャラクター"},{"name":"鼠色","reading":"ねずみいろ","hex":"#838383","simple":"キャラクター"},{"name":"利休鼠","reading":"りきゅうねず","hex":"#6E7972","simple":"キャラクター"},{"name":"鉛色","reading":"なまりいろ","hex":"#72777D","simple":"キャラクター"},{"name":"灰色","reading":"はいいろ","hex":"#767676","simple":"キャラクター"},{"name":"煤竹色","reading":"すすたけいろ","hex":"#5D5245","simple":"キャラクター"},{"name":"黒茶","reading":"くろちゃ","hex":"#3E312B","simple":"キャラクター"},{"name":"墨","reading":"すみ","hex":"#343434","simple":"キャラクター"},{"name":"黒","reading":"くろ","hex":"#2A2A2A","simple":"キャラクター"},{"name":"鉄黒","reading":"てつぐろ","hex":"#2A2A2A","simple":"キャラクター"},{"name":"金色","reading":"きんいろ","hex":"#FFD700","simple":"キャラクター"},{"name":"銀色","reading":"ぎんいろ","hex":"#C0C0C0","simple":"キャラクター"},{"name":"ローズレッド","reading":"ローズレッド","hex":"#CA4775","simple":"キャラクター"},{"name":"ローズピンク","reading":"ローズピンク","hex":"#EE8EA0","simple":"キャラクター"},{"name":"コチニールレッド","reading":"コチニールレッド","hex":"#AE2B52","simple":"キャラクター"},{"name":"ルビーレッド","reading":"ルビーレッド","hex":"#B90B50","simple":"キャラクター"},{"name":"ワインレッド","reading":"ワインレッド","hex":"#80273F","simple":"キャラクター"},{"name":"バーガンディー","reading":"バーガンディー","hex":"#442E31","simple":"キャラクター"},{"name":"オールドローズ","reading":"オールドローズ","hex":"#C67A85","simple":"キャラクター"},{"name":"ローズ","reading":"ローズ","hex":"#DB3561","simple":"キャラクター"},{"name":"ストロベリー","reading":"ストロベリー","hex":"#BB004B","simple":"キャラクター"},{"name":"コーラルレッド","reading":"コーラルレッド","hex":"#FF7F8F","simple":"キャラクター"},{"name":"ピンク","reading":"ピンク","hex":"#EA9198","simple":"キャラクター"},{"name":"ボルドー","reading":"ボルドー","hex":"#533638","simple":"キャラクター"},{"name":"ベビーピンク","reading":"ベビーピンク","hex":"#FEC6C5","simple":"キャラクター"},{"name":"ポピーレッド","reading":"ポピーレッド","hex":"#DF334E","simple":"キャラクター"},{"name":"シグナルレッド","reading":"シグナルレッド","hex":"#CE2143","simple":"キャラクター"},{"name":"カーマイン","reading":"カーマイン","hex":"#BE0039","simple":"キャラクター"},{"name":"レッド","reading":"レッド","hex":"#DF3447","simple":"キャラクター"},{"name":"トマトレッド","reading":"トマトレッド","hex":"#DF3447","simple":"キャラクター"},{"name":"マルーン","reading":"マルーン","hex":"#662B2C","simple":"キャラクター"},{"name":"ヴァーミリオン","reading":"ヴァーミリオン","hex":"#EF454A","simple":"キャラクター"},{"name":"スカーレット","reading":"スカーレット","hex":"#DE3838","simple":"キャラクター"},{"name":"テラコッタ","reading":"テラコッタ","hex":"#A95045","simple":"キャラクター"},{"name":"サーモンピンク","reading":"サーモンピンク","hex":"#FF9E8C","simple":"キャラクター"},{"name":"シェルピンク","reading":"シェルピンク","hex":"#F9C9B9","simple":"キャラクター"},{"name":"ネールピンク","reading":"ネールピンク","hex":"#EFBAA8","simple":"キャラクター"},{"name":"チャイニーズレッド","reading":"チャイニーズレッド","hex":"#FD5A2A","simple":"キャラクター"},{"name":"キャロットオレンジ","reading":"キャロットオレンジ","hex":"#C55431","simple":"キャラクター"},{"name":"バーントシェンナ","reading":"バーントシェンナ","hex":"#A2553C","simple":"キャラクター"},{"name":"チョコレート","reading":"チョコレート","hex":"#503830","simple":"キャラクター"},{"name":"ココアブラウン","reading":"ココアブラウン","hex":"#704B38","simple":"キャラクター"},{"name":"ピーチ","reading":"ピーチ","hex":"#E8BDA5","simple":"キャラクター"},{"name":"ローシェンナ","reading":"ローシェンナ","hex":"#B1632A","simple":"キャラクター"},{"name":"オレンジ","reading":"オレンジ","hex":"#EF810F","simple":"キャラクター"},{"name":"ブラウン","reading":"ブラウン","hex":"#6D4C33","simple":"キャラクター"},{"name":"アプリコット","reading":"アプリコット","hex":"#D89F6D","simple":"キャラクター"},{"name":"タン","reading":"タン","hex":"#9E6C3F","simple":"キャラクター"},{"name":"マンダリンオレンジ","reading":"マンダリンオレンジ","hex":"#F09629","simple":"キャラクター"},{"name":"コルク","reading":"コルク","hex":"#9F7C5C","simple":"キャラクター"},{"name":"エクルベージュ","reading":"エクルベージュ","hex":"#F5CDA6","simple":"キャラクター"},{"name":"ゴールデンイエロー","reading":"ゴールデンイエロー","hex":"#E89A3C","simple":"キャラクター"},{"name":"マリーゴールド","reading":"マリーゴールド","hex":"#FFA400","simple":"キャラクター"},{"name":"バフ","reading":"バフ","hex":"#C09567","simple":"キャラクター"},{"name":"アンバー","reading":"アンバー","hex":"#AA7A40","simple":"キャラクター"},{"name":"ブロンズ","reading":"ブロンズ","hex":"#7A592F","simple":"キャラクター"},{"name":"ベージュ","reading":"ベージュ","hex":"#BCA78D","simple":"キャラクター"},{"name":"イエローオーカー","reading":"イエローオーカー","hex":"#B8883B","simple":"キャラクター"},{"name":"バーントアンバー","reading":"バーントアンバー","hex":"#57462D","simple":"キャラクター"},{"name":"セピア","reading":"セピア","hex":"#483C2C","simple":"キャラクター"},{"name":"カーキ","reading":"カーキ","hex":"#92723A","simple":"キャラクター"},{"name":"ブロンド","reading":"ブロンド","hex":"#F6A57D","simple":"キャラクター"},{"name":"ネープルスイエロー","reading":"ネープルスイエロー","hex":"#EEC063","simple":"キャラクター"},{"name":"レグホーン","reading":"レグホーン","hex":"#DFC291","simple":"キャラクター"},{"name":"ローアンバー","reading":"ローアンバー","hex":"#765B1B","simple":"キャラクター"},{"name":"クロムイエロー","reading":"クロムイエロー","hex":"#F6BF00","simple":"キャラクター"},{"name":"イエロー","reading":"イエロー","hex":"#F4D500","simple":"キャラクター"},{"name":"クリームイエロー","reading":"クリームイエロー","hex":"#E4D3A2","simple":"キャラクター"},{"name":"ジョンブリアン","reading":"ジョンブリアン","hex":"#F4D500","simple":"キャラクター"},{"name":"カナリーイエロー","reading":"カナリーイエロー","hex":"#EDD634","simple":"キャラクター"},{"name":"オリーブドラブ","reading":"オリーブドラブ","hex":"#655F47","simple":"キャラクター"},{"name":"オリーブ","reading":"オリーブ","hex":"#5C5424","simple":"キャラクター"},{"name":"レモンイエロー","reading":"レモンイエロー","hex":"#D9CA00","simple":"キャラクター"},{"name":"オリーブグリーン","reading":"オリーブグリーン","hex":"#575531","simple":"キャラクター"},{"name":"シャトルーズグリーン","reading":"シャトルーズグリーン","hex":"#C0D136","simple":"キャラクター"},{"name":"リーフグリーン","reading":"リーフグリーン","hex":"#89983B","simple":"キャラクター"},{"name":"グラスグリーン","reading":"グラスグリーン","hex":"#737C3E","simple":"キャラクター"},{"name":"アイビーグリーン","reading":"アイビーグリーン","hex":"#4C6733","simple":"キャラクター"},{"name":"アップルグリーン","reading":"アップルグリーン","hex":"#A2D29E","simple":"キャラクター"},{"name":"ミントグリーン","reading":"ミントグリーン","hex":"#58CE91","simple":"キャラクター"},{"name":"グリーン","reading":"グリーン","hex":"#009A57","simple":"キャラクター"},{"name":"コバルトグリーン","reading":"コバルトグリーン","hex":"#09C289","simple":"キャラクター"},{"name":"エメラルドグリーン","reading":"エメラルドグリーン","hex":"#00A474","simple":"キャラクター"},{"name":"マラカイトグリーン","reading":"マラカイトグリーン","hex":"#007E4E","simple":"キャラクター"},{"name":"ボトルグリーン","reading":"ボトルグリーン","hex":"#204537","simple":"キャラクター"},{"name":"フォレストグリーン","reading":"フォレストグリーン","hex":"#2A7762","simple":"キャラクター"},{"name":"ビリジアン","reading":"ビリジアン","hex":"#006D56","simple":"キャラクター"},{"name":"ビリヤードグリーン","reading":"ビリヤードグリーン","hex":"#00483A","simple":"キャラクター"},{"name":"シーグリーン","reading":"シーグリーン","hex":"#97B64D","simple":"キャラクター"},{"name":"ピーコックグリーン","reading":"ピーコックグリーン","hex":"#007D7F","simple":"キャラクター"},{"name":"ナイルブルー","reading":"ナイルブルー","hex":"#3D8E95","simple":"キャラクター"},{"name":"ピーコックブルー","reading":"ピーコックブルー","hex":"#006E7B","simple":"キャラクター"},{"name":"ターコイズブルー","reading":"ターコイズブルー","hex":"#009DBF","simple":"キャラクター"},{"name":"マリンブルー","reading":"マリンブルー","hex":"#00526B","simple":"キャラクター"},{"name":"ホライゾンブルー","reading":"ホライゾンブルー","hex":"#87AFC5","simple":"キャラクター"},{"name":"シアン","reading":"シアン","hex":"#009CD1","simple":"キャラクター"},{"name":"スカイブルー","reading":"スカイブルー","hex":"#89BDDE","simple":"キャラクター"},{"name":"セルリアンブルー","reading":"セルリアンブルー","hex":"#0073A2","simple":"キャラクター"},{"name":"ベビーブルー","reading":"ベビーブルー","hex":"#A3BACD","simple":"キャラクター"},{"name":"サックスブルー","reading":"サックスブルー","hex":"#5A7993","simple":"キャラクター"},{"name":"ブルー","reading":"ブルー","hex":"#006FAB","simple":"キャラクター"},{"name":"コバルトブルー","reading":"コバルトブルー","hex":"#0062A0","simple":"キャラクター"},{"name":"アイアンブルー","reading":"アイアンブルー","hex":"#3A4861","simple":"キャラクター"},{"name":"プルシアンブルー","reading":"プルシアンブルー","hex":"#3A4861","simple":"キャラクター"},{"name":"ミッドナイトブルー","reading":"ミッドナイトブルー","hex":"#252A35","simple":"キャラクター"},{"name":"ヒヤシンス","reading":"ヒヤシンス","hex":"#6E82AD","simple":"キャラクター"},{"name":"ネイビーブルー","reading":"ネイビーブルー","hex":"#343D55","simple":"キャラクター"},{"name":"ウルトラマリンブルー","reading":"ウルトラマリンブルー","hex":"#384D98","simple":"キャラクター"},{"name":"オリエンタルブルー","reading":"オリエンタルブルー","hex":"#304285","simple":"キャラクター"},{"name":"ウィスタリア","reading":"ウィスタリア","hex":"#7967C3","simple":"キャラクター"},{"name":"パンジー","reading":"パンジー","hex":"#433171","simple":"キャラクター"},{"name":"ヘリオトロープ","reading":"ヘリオトロープ","hex":"#8865B2","simple":"キャラクター"},{"name":"ヴァイオレット","reading":"ヴァイオレット","hex":"#714C99","simple":"キャラクター"},{"name":"ラベンダー","reading":"ラベンダー","hex":"#9A8A9F","simple":"キャラクター"},{"name":"モーブ","reading":"モーブ","hex":"#855896","simple":"キャラクター"},{"name":"ライラック","reading":"ライラック","hex":"#C29DC8","simple":"キャラクター"},{"name":"オーキッド","reading":"オーキッド","hex":"#C69CC5","simple":"キャラクター"},{"name":"パープル","reading":"パープル","hex":"#A757A8","simple":"キャラクター"},{"name":"マゼンタ","reading":"マゼンタ","hex":"#D13A84","simple":"キャラクター"},{"name":"チェリーピンク","reading":"チェリーピンク","hex":"#D35889","simple":"キャラクター"},{"name":"ホワイト","reading":"ホワイト","hex":"#F0F0F0","simple":"キャラクター"},{"name":"スノーホワイト","reading":"スノーホワイト","hex":"#F0F0F0","simple":"キャラクター"},{"name":"アイボリー","reading":"アイボリー","hex":"#DED2BF","simple":"キャラクター"},{"name":"スカイグレイ","reading":"スカイグレイ","hex":"#B3B8BB","simple":"キャラクター"},{"name":"パールグレイ","reading":"パールグレイ","hex":"#AAAAAA","simple":"キャラクター"},{"name":"シルバーグレイ","reading":"シルバーグレイ","hex":"#9C9C9C","simple":"キャラクター"},{"name":"アッシュグレイ","reading":"アッシュグレイ","hex":"#8F8F8F","simple":"キャラクター"},{"name":"ローズグレイ","reading":"ローズグレイ","hex":"#8C8080","simple":"キャラクター"},{"name":"グレイ","reading":"グレイ","hex":"#767676","simple":"キャラクター"},{"name":"スチールグレイ","reading":"スチールグレイ","hex":"#6D696F","simple":"キャラクター"},{"name":"スレートグレイ","reading":"スレートグレイ","hex":"#515356","simple":"キャラクター"},{"name":"チャコールグレイ","reading":"チャコールグレイ","hex":"#4B474D","simple":"キャラクター"},{"name":"ランプブラック","reading":"ランプブラック","hex":"#212121","simple":"キャラクター"},{"name":"ブラック","reading":"ブラック","hex":"#212121","simple":"キャラクター"}];
+const dayKey=()=>{let d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`}
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+// One complete 269-day cycle without repeats; order is deterministically shuffled.
+function shuffledColors(){
+  const a=[...COLORS]; let seed=0x5f3759df;
+  function rnd(){ seed=(Math.imul(seed,1664525)+1013904223)>>>0; return seed/4294967296; }
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+const epoch=Math.floor(new Date(2026,0,1).getTime()/86400000);
+const today=Math.floor(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()).getTime()/86400000);
+const color=shuffledColors()[(today-epoch%COLORS.length+COLORS.length*1000)%COLORS.length];
+
+function hairSearchWord(hex){
+  const h=hex.replace("#","");
+  const r=parseInt(h.slice(0,2),16)/255, g=parseInt(h.slice(2,4),16)/255, b=parseInt(h.slice(4,6),16)/255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
+  let hue=0;
+  if(d){
+    if(max===r) hue=((g-b)/d)%6;
+    else if(max===g) hue=(b-r)/d+2;
+    else hue=(r-g)/d+4;
+    hue*=60; if(hue<0) hue+=360;
+  }
+  const sat=max===0?0:d/max, val=max;
+
+  // Neutrals first. Light neutral -> white/silver, dark neutral -> black.
+  if(sat < 0.12){
+    if(val >= 0.88) return "白髪";
+    if(val >= 0.52) return "銀髪";
+    return "黒髪";
+  }
+
+  // Very dark chromatic colors are usually perceived/searchable as black/dark hair.
+  if(val < 0.30) return "黒髪";
+
+  // Low-saturation warm colors: blonde/brown rather than yellow/orange.
+  if(hue >= 28 && hue < 68){
+    if(val >= 0.72 && sat < 0.55) return "金髪";
+    if(val < 0.62 || sat < 0.42) return "茶髪";
+    return "金髪";
+  }
+
+  // Brown/red-brown.
+  if((hue < 28 || hue >= 345) && val < 0.62 && sat < 0.75) return "茶髪";
+
+  // Chromatic hair-search categories.
+  if(hue < 12 || hue >= 345) return "赤髪";
+  if(hue < 28) return val >= 0.78 && sat < 0.60 ? "ピンク髪" : "オレンジ髪";
+  if(hue < 68) return "金髪";
+  if(hue < 165) return "緑髪";
+  if(hue < 195) return "水色髪";
+  if(hue < 255) return (val >= 0.72 && sat < 0.55) ? "水色髪" : "青髪";
+  if(hue < 315) return "紫髪";
+  return "ピンク髪";
+}
+const hairWord=hairSearchWord(color.hex);
+
+const colorNameEl=document.getElementById("colorName");
+const colorReadingEl=document.getElementById("colorReading");
+const colorSwatchEl=document.getElementById("colorSwatch");
+const colorHexEl=document.getElementById("colorHex");
+colorNameEl.textContent=color.name;
+colorReadingEl.textContent=color.reading;
+colorSwatchEl.style.background=color.hex;
+colorHexEl.textContent=`${color.hex} ・ ${color.simple}系`;
+google.href=`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(hairWord+" キャラクター")}`;
+document.getElementById("hairLabel").textContent=`検索語：${hairWord} キャラクター`;
+
+const DB="iro-anchor-v3", STORE="pairs";
+function db(){return new Promise((res,rej)=>{let r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:"colorName"});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function all(){let d=await db();return new Promise((res,rej)=>{let r=d.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function put(x){let d=await db();return new Promise((res,rej)=>{let r=d.transaction(STORE,"readwrite").objectStore(STORE).put(x);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+async function del(k){let d=await db();return new Promise((res,rej)=>{let r=d.transaction(STORE,"readwrite").objectStore(STORE).delete(k);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+async function clearDB(){let d=await db();return new Promise((res,rej)=>{let r=d.transaction(STORE,"readwrite").objectStore(STORE).clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function fileData(file){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(file)})}
+let pending=null;
+
+async function render(){
+ let xs=await all(), cur=xs.find(x=>x.colorName===color.name);
+ if(cur){
+  assigned.innerHTML=`<div class="card"><b>記憶アンカー</b><img class="anchorImg" src="${cur.image}">
+<div><span class="small">日本語</span><br><span style="font-size:24px;font-weight:800">${esc(cur.native||"—")}</span></div>
+<div style="margin-top:7px"><span class="small">English</span><br><span style="font-size:18px;font-weight:700">${esc(cur.character||"—")}</span></div>
+<div class="row"><button id="editCurrent" class="alt">名前・画像を編集</button><label class="upload alt">画像を変更<input id="changeExisting" type="file" accept="image/*"></label><button id="removeCurrent" class="alt">登録解除</button></div></div>`;
+  searchbox.classList.add("hidden");
+  changeExisting.onchange=async e=>{let f=e.target.files[0];if(!f)return;cur.image=await fileData(f);await put(cur);render()}
+  editCurrent.onclick=async()=>{document.querySelectorAll("section").forEach(v=>v.classList.add("hidden"));book.classList.remove("hidden");await render();await openBookEditor(color.name)}
+  removeCurrent.onclick=async()=>{await del(color.name);render()}
+ } else {assigned.innerHTML="";searchbox.classList.remove("hidden")}
+ pairs.innerHTML=xs.length?xs.map(x=>`<div class="card pair bookPair" data-color="${esc(x.colorName)}" style="cursor:pointer"><span class="dot" style="background:${x.color.hex}"></span><img src="${x.image}"><div><b>${esc(x.color.name)}</b><div><span class="small">日本語</span> ${esc(x.native||"—")}</div><div><span class="small">English</span> ${esc(x.character||"—")}</div></div></div>`).join(""):`<div class="card small">まだ登録なし。</div>`;
+ document.querySelectorAll(".bookPair").forEach(el=>el.onclick=()=>openBookEditor(el.dataset.color));
+}
+
+go.onclick=async()=>{
+ let term=q.value.trim();if(!term){status.textContent="キャラ名を入力してください。";return}
+ status.textContent="検索中…";results.innerHTML="";
+ const query=`query($s:String!){Page(page:1,perPage:20){characters(search:$s,sort:SEARCH_MATCH){id name{full native} image{large}}}}`;
+ try{
+  let r=await fetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({query,variables:{s:term}})});
+  let j=await r.json(), chars=j?.data?.Page?.characters||[], xs=await all(), used=new Set(xs.map(x=>x.characterId).filter(Boolean));
+  status.textContent=chars.length?`${chars.length}件。キャラをタップしてください。`:"見つかりませんでした。";
+  results.innerHTML=chars.map(c=>`<div class="person ${used.has(c.id)?"used":""}" data-id="${c.id}" data-name="${esc(c.name.full)}" data-native="${esc(c.name.native||"")}" data-img="${c.image.large}"><img src="${c.image.large}"><div><b>${esc(c.name.native||c.name.full)}</b><br><span class="small">${esc(c.name.full)}${used.has(c.id)?"・使用済み":""}</span></div></div>`).join("");
+  document.querySelectorAll(".person:not(.used)").forEach(el=>el.onclick=()=>choose(el));
+ }catch(e){status.textContent="検索に失敗しました。画像から直接登録もできます。"}
+}
+function choose(el){
+ pending={colorName:color.name,color,characterId:+el.dataset.id,character:el.dataset.name,native:el.dataset.native,image:el.dataset.img};
+ pickImg.src=pending.image;
+pickName.innerHTML=`<div><span class="small">日本語</span><br>${esc(pending.native||pending.character)}</div><div style="margin-top:6px"><span class="small">English</span><br>${esc(pending.character)}</div>`;
+pick.classList.remove("hidden");searchbox.classList.add("hidden");
+}
+replaceFile.onchange=async e=>{let f=e.target.files[0];if(!f)return;pending.image=await fileData(f);pickImg.src=pending.image}
+savePick.onclick=async()=>{if(!pending)return;await put(pending);pending=null;pick.classList.add("hidden");await render()}
+cancelPick.onclick=()=>{pending=null;pick.classList.add("hidden");searchbox.classList.remove("hidden")}
+
+directFile.onchange=async e=>{let f=e.target.files[0];if(!f)return;pending={colorName:color.name,color,characterId:null,character:"",native:"",image:await fileData(f)};directImg.src=pending.image;directNative.value="";directName.value="";direct.classList.remove("hidden");searchbox.classList.add("hidden")}
+saveDirect.onclick=async()=>{let ja=directNative.value.trim(),en=directName.value.trim();if(!ja&&!en){directNative.focus();return}pending.native=ja;pending.character=en;await put(pending);pending=null;direct.classList.add("hidden");await render()}
+cancelDirect.onclick=()=>{pending=null;direct.classList.add("hidden");searchbox.classList.remove("hidden");directFile.value=""}
+
+
+let editingColorName=null;
+async function openBookEditor(colorName){
+ const xs=await all(),x=xs.find(v=>v.colorName===colorName);if(!x)return;
+ editingColorName=colorName;editColorTitle.textContent=`${x.color.name} の登録を編集`;
+ editImg.src=x.image;editNative.value=x.native||"";editEnglish.value=x.character||"";
+ bookEditor.classList.remove("hidden");bookEditor.scrollIntoView({behavior:"smooth",block:"start"});
+}
+editFile.onchange=async e=>{const f=e.target.files[0];if(f)editImg.src=await fileData(f)};
+saveEdit.onclick=async()=>{if(!editingColorName)return;const xs=await all(),x=xs.find(v=>v.colorName===editingColorName);if(!x)return;x.native=editNative.value.trim();x.character=editEnglish.value.trim();x.image=editImg.src;await put(x);bookEditor.classList.add("hidden");editingColorName=null;await render()};
+deleteEdit.onclick=async()=>{if(editingColorName&&confirm("この色の登録を解除しますか？")){await del(editingColorName);bookEditor.classList.add("hidden");editingColorName=null;await render()}};
+cancelEdit.onclick=()=>{bookEditor.classList.add("hidden");editingColorName=null;editFile.value=""};
+
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=async()=>{document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));document.getElementById(b.dataset.tab).classList.remove("hidden");await render()})
+reset.onclick=async()=>{if(confirm("登録を全部消しますか？")){await clearDB();render()}}
+if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js");
+render();
+</script></body></html>
